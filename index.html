@@ -3381,7 +3381,7 @@ self.addEventListener('fetch', e => {
             const pegInvested = pegRef.cost;
             const pegValue = pegRef.parts * vlEst;
 
-            const percolInvested = PERCOL_COST;
+            const percolInvested = percol.reduce((s, row) => s + (row.pv || 0), 0);
             let percolValue = 0;
             percol.forEach(row => { percolValue += row.parts * row.vl; });
 
