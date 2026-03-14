@@ -1318,7 +1318,7 @@ self.addEventListener('fetch', e => {
         <!-- PEA Section -->
         <div class="section">
             <div class="section-header">
-                <div class="section-title">📈 PEA Fortuneo</div>
+                <div class="section-title">📈 PEA</div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap">
                     <button class="section-edit-btn" style="color:var(--green);border-color:rgba(34,197,94,0.4)" onclick="openBuyWidget('pea')">➕ Achat</button>
                     <button class="section-edit-btn btn-sell" onclick="openSellWidget('pea')">💸 Vente</button>
@@ -1379,7 +1379,7 @@ self.addEventListener('fetch', e => {
         <!-- PEG Section -->
         <div class="section">
             <div class="section-header">
-                <div class="section-title">🟢 PEG Orange (FCPE)</div>
+                <div class="section-title">🟢 PEG</div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap">
                     <button class="section-edit-btn btn-sell" onclick="openSellWidget('peg')">💸 Vente</button>
                     <button class="section-edit-btn" onclick="editSection('peg')">✏️ Éditer</button>
@@ -1409,7 +1409,7 @@ self.addEventListener('fetch', e => {
         <!-- PERCOL Section -->
         <div class="section">
             <div class="section-header">
-                <div class="section-title">🔵 PERCOL Orange</div>
+                <div class="section-title">🔵 PERCOL</div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap">
                     <button class="section-edit-btn btn-sell" onclick="openSellWidget('percol')">💸 Vente</button>
                     <button class="section-edit-btn" onclick="editSection('percol')">✏️ Éditer</button>
@@ -2399,141 +2399,23 @@ self.addEventListener('fetch', e => {
 
     <script>
         // ========== CONSTANTS ==========
-        const DEFAULT_CRYPTO = [
-            { name:'Bitcoin',   ticker:'BTC', geckoId:'bitcoin',   tag:'tag-btc', qty:0.061947,  pru:53298 },
-            { name:'Bittensor', ticker:'TAO', geckoId:'bittensor', tag:'tag-tao', qty:7.070883,  pru:120   }
-        ];
+        const DEFAULT_CRYPTO = [];
 
-        const DEFAULT_PEA = [
-            { name:'BNP Easy S&P 500',            ticker:'ESEE', yahoo:'ESE.PA',  parts:26, pru:27.62,  fallbackPrice:29.14 },
-            { name:'iShares MSCI World Swap PEA', ticker:'WPEA', yahoo:'WPEA.PA', parts:22, pru:6.21,   fallbackPrice:6.25  },
-            { name:'Amundi PEA Asie Pacifique',   ticker:'PAEJ', yahoo:'PAEJ.PA', parts:1,  pru:23.445, fallbackPrice:24.65 }
-        ];
+        const DEFAULT_PEA = [];
 
-        const DEFAULT_PEG_REF = { parts:255.2779, cost:2635.10, vlRef:14.18, oraRef:14.0, lastUpdate: '2025-12-31' };
+        const DEFAULT_PEG_REF = { parts:0, cost:0, vlRef:0, oraRef:0, lastUpdate: '' };
 
-        const DEFAULT_PERCOL_ROWS = [
-            { name:'Actions Euro Monde',                        compartiment:'Pilote – 020322',  parts:9.0664,  vl:268.12, pv:484.71 },
-            { name:'Actions Euro Monde',                        compartiment:'Libre VV – fiscal',parts:0.2186,  vl:268.12, pv:8.61   },
-            { name:'Obligations Euro Monde',                    compartiment:'Libre – 020321',   parts:2.9926,  vl:184.12, pv:59.47  },
-            { name:'Actions Euro Monde',                        compartiment:'Libre – 020321',   parts:6.8538,  vl:268.12, pv:352.10 },
-            { name:'MH Épargne Actions Emploi Retraite Sol. A', compartiment:'Libre – 020321',   parts:10.8996, vl:16.608, pv:35.87  }
-        ];
+        const DEFAULT_PERCOL_ROWS = [];
 
-        const PERCOL_COST = 4118.39;
+        const PERCOL_COST = 0;
 
         // ===== LOANS =====
-        const LOANS = [
-            {
-                id: '09197051',
-                label: 'Crédit immobilier principal',
-                bank: 'Banque Populaire Grand Ouest',
-                montant: 261107,
-                taux: 1.88,
-                duree: 300,
-                mensualite: 1381.72,
-                debut: 'Nov 2022',
-                fin: 'Mai 2047',
-                type: 'immo',
-                payDay: 5,
-                note: null
-            },
-            {
-                id: '09197050',
-                label: 'Prêt habitat taux 0%',
-                bank: 'Banque Populaire Grand Ouest',
-                montant: 15000,
-                taux: 0,
-                duree: 240,
-                mensualite: 62.50,
-                debut: 'Nov 2022',
-                fin: 'Nov 2042',
-                type: 'immo',
-                payDay: 5,
-                note: null
-            },
-            {
-                id: '09197049',
-                label: 'PTZ+ (Prêt à Taux Zéro)',
-                bank: 'Banque Populaire Grand Ouest',
-                montant: 40000,
-                taux: 0,
-                duree: 240,
-                mensualite: 0,
-                debut: 'Nov 2022',
-                fin: 'Nov 2042',
-                type: 'ptz',
-                payDay: 5,
-                note: 'Franchise jusqu\'en déc. 2027 → 222,22 €/mois ensuite'
-            },
-            {
-                id: 'casden',
-                label: 'Prêt personnel Casden',
-                bank: 'Casden Banque Populaire',
-                montant: 45000,
-                taux: 5.25,
-                duree: 120,
-                mensualite: 514.31,
-                assurance: 31.50,
-                debut: 'Jun 2025',
-                fin: 'Jun 2035',
-                type: 'conso',
-                payDay: 4,
-                note: '+ 31,50 €/mois assurance'
-            }
-        ];
+        const LOANS = [];
 
-        // ===== LOAN ANCHORS (CRD de référence extraits des tableaux d'amortissement) =====
-        // L'ancre est le dernier CRD connu + sa date de paiement
-        // À mettre à jour via le bouton "Mettre à jour les prêts" dès que tu reçois un nouveau tableau
-        const DEFAULT_LOAN_ANCHORS = {
-            '09197051': { crd: 239352.94, date: '2026-03-05', label: 'Crédit immobilier principal' },
-            '09197050': { crd: 12500.00,  date: '2026-03-05', label: 'Prêt habitat 0%' },
-            '09197049': { crd: 40000.00,  date: '2026-03-05', label: 'PTZ+' },
-            'casden':   { crd: 42677.14,  date: '2026-03-04', label: 'Prêt personnel Casden' }
-        };
+        // ===== LOAN ANCHORS =====
+        const DEFAULT_LOAN_ANCHORS = {};
 
-        const REALIZED = [
-            {t:'RENDER',n:'Render',          cost:1272,sell:481, pnl:-791,pct:-62.2},
-            {t:'RSR',   n:'Reserve Rights',  cost:1004,sell:778, pnl:-226,pct:-22.5},
-            {t:'ONDO',  n:'Ondo',            cost:1003,sell:581, pnl:-421,pct:-42.0},
-            {t:'INJ',   n:'Injective',       cost:936, sell:341, pnl:-596,pct:-63.6},
-            {t:'FET',   n:'AI Alliance',     cost:908, sell:474, pnl:-434,pct:-47.8},
-            {t:'AKT',   n:'Akash Network',   cost:878, sell:342, pnl:-535,pct:-61.0},
-            {t:'LINK',  n:'ChainLink',       cost:986, sell:1023,pnl:+37, pct:3.8},
-            {t:'ETH',   n:'Ethereum',        cost:958, sell:1350,pnl:+392,pct:41.0},
-            {t:'STX',   n:'Stacks',          cost:737, sell:474, pnl:-263,pct:-35.7},
-            {t:'PENDLE',n:'Pendle',          cost:651, sell:404, pnl:-248,pct:-38.0},
-            {t:'NEAR',  n:'NEAR Protocol',   cost:634, sell:294, pnl:-341,pct:-53.7},
-            {t:'ANKR',  n:'Ankr',            cost:534, sell:410, pnl:-124,pct:-23.3},
-            {t:'CKB',   n:'Nervos CKB',      cost:462, sell:570, pnl:+107,pct:23.3},
-            {t:'MATIC', n:'Polygon',         cost:422, sell:403, pnl:-19, pct:-4.5},
-            {t:'ATOM',  n:'Cosmos',          cost:396, sell:368, pnl:-28, pct:-7.0},
-            {t:'KAS',   n:'Kaspa',           cost:392, sell:383, pnl:-8,  pct:-2.2},
-            {t:'DOT',   n:'Polkadot',        cost:237, sell:376, pnl:+139,pct:58.5},
-            {t:'LPT',   n:'Livepeer',        cost:290, sell:264, pnl:-27, pct:-9.2},
-            {t:'AGIX',  n:'SingularityNET',  cost:198, sell:237, pnl:+39, pct:19.7},
-            {t:'OCEAN', n:'Ocean Protocol',  cost:114, sell:158, pnl:+44, pct:38.3},
-            {t:'GRT',   n:'The Graph',       cost:162, sell:188, pnl:+27, pct:16.5},
-            {t:'ARB',   n:'Arbitrum',        cost:57,  sell:102, pnl:+45, pct:78.2},
-            {t:'FTM',   n:'Fantom',          cost:51,  sell:95,  pnl:+44, pct:86.8},
-            {t:'ROSE',  n:'Oasis Network',   cost:45,  sell:81,  pnl:+36, pct:78.8},
-            {t:'RIO',   n:'Realio Network',  cost:93,  sell:131, pnl:+38, pct:40.7},
-            {t:'AXL',   n:'Axelar',          cost:10,  sell:54,  pnl:+44, pct:431.2},
-            {t:'LDO',   n:'Lido DAO',        cost:37,  sell:57,  pnl:+20, pct:55.3},
-            {t:'CFG',   n:'Centrifuge',      cost:202, sell:88,  pnl:-114,pct:-56.6},
-            {t:'MPL',   n:'Maple',           cost:224, sell:215, pnl:-9,  pct:-3.8},
-            {t:'MASA',  n:'Masa Network',    cost:215, sell:78,  pnl:-137,pct:-63.6},
-            {t:'CLORE', n:'Clore.ai',        cost:37,  sell:30,  pnl:-8,  pct:-20.4},
-            {t:'DUSK',  n:'Dusk',            cost:78,  sell:42,  pnl:-36, pct:-46.5},
-            {t:'DYM',   n:'Dymension',       cost:0,   sell:104, pnl:+104,pct:0},
-            {t:'SEI',   n:'Sei',             cost:0,   sell:43,  pnl:+43, pct:0},
-            {t:'AZERO', n:'Aleph Zero',      cost:35,  sell:40,  pnl:+5,  pct:12.8},
-            {t:'DNX',   n:'Dynex',           cost:31,  sell:31,  pnl:0,   pct:0.5},
-            {t:'TRX',   n:'TRON',            cost:22,  sell:29,  pnl:+6,  pct:28.8},
-            {t:'VET',   n:'VeChain',         cost:13,  sell:18,  pnl:+5,  pct:34.7},
-            {t:'KAIA',  n:'Kaia',            cost:15,  sell:19,  pnl:+3,  pct:22.7},
-        ];
+        const REALIZED = [];
 
         const DEFAULT_CTO = [];
 
@@ -2543,7 +2425,7 @@ self.addEventListener('fetch', e => {
         let cto         = loadFromStorage('inv_cto', DEFAULT_CTO);
         let pegRef      = loadFromStorage('inv_peg_ref', DEFAULT_PEG_REF);
         let percol      = loadFromStorage('inv_percol', DEFAULT_PERCOL_ROWS);
-        let immoVal     = loadFromStorage('inv_immo_val', 340000);
+        let immoVal     = loadFromStorage('inv_immo_val', 0);
         let loanAnchors    = loadFromStorage('inv_loan_anchors', DEFAULT_LOAN_ANCHORS);
         let extraLoans     = loadFromStorage('inv_extra_loans', []);
         let deletedLoanIds = loadFromStorage('inv_deleted_loans', []);
@@ -2622,13 +2504,14 @@ self.addEventListener('fetch', e => {
             const n = countPaymentsSince(anchor.date, loan.payDay);
             if (n === 0) return anchor.crd;
 
-            // PTZ : franchise jusqu'au 05/12/2027, puis 222,22€/mois
-            if (loan.id === '09197049') {
-                const ptzStart = new Date('2027-12-05');
+            // PTZ : franchise jusqu'à la date de fin de franchise définie dans le prêt
+            if (loan.type === 'ptz') {
+                const franchiseEnd = loan.franchiseEnd ? new Date(loan.franchiseEnd) : null;
                 const today = new Date();
-                if (today < ptzStart) return anchor.crd; // encore en franchise
-                const nPtz = countPaymentsSince('2027-12-04', 5); // paiements depuis déc 2027
-                return Math.max(0, 40000 - nPtz * 222.22);
+                if (!franchiseEnd || today < franchiseEnd) return anchor.crd; // encore en franchise
+                const ptzMensualite = loan.mensualiteApres || loan.mensualite;
+                const nPtz = countPaymentsSince(franchiseEnd.toISOString().slice(0,10), loan.payDay || 5);
+                return Math.max(0, anchor.crd - nPtz * ptzMensualite);
             }
 
             // Taux zéro : amortissement linéaire pur
@@ -3258,10 +3141,21 @@ self.addEventListener('fetch', e => {
             const totalCrd     = immoLoans.reduce((s, l) => s + computeCRD(l), 0);
             const totalEmprunte= immoLoans.reduce((s, l) => s + l.montant, 0);
             const totalAmorti  = totalEmprunte - totalCrd;
-            // Mensualités actuelles : PTZ toujours en franchise (0€), les deux autres actifs
-            const mensActuelle = immoLoans.reduce((s, l) => s + l.mensualite, 0);
-            // Mensualités à partir de déc. 2027 (PTZ actif, prêt principal réduit)
-            const mensApres2027 = 1033.88 + 62.50 + 222.22; // principal réduit + habitat 0% + PTZ
+
+            // Mensualités actuelles (PTZ en franchise = mensualite 0)
+            const mensActuelle = immoLoans.reduce((s, l) => s + (l.mensualite || 0), 0);
+
+            // Mensualités futures : PTZ actif → on utilise mensualiteApres si défini, sinon on calcule
+            const mensApres = immoLoans.reduce((s, l) => {
+                if (l.type === 'ptz') return s + (l.mensualiteApres || l.mensualite || 0);
+                return s + (l.mensualite || 0);
+            }, 0);
+
+            // Trouver le PTZ pour afficher la date de fin de franchise
+            const ptzLoan = immoLoans.find(l => l.type === 'ptz');
+            const ptzLabel = ptzLoan?.franchiseEnd
+                ? `À partir de ${new Date(ptzLoan.franchiseEnd).toLocaleDateString('fr-FR', {month:'long', year:'numeric'})} (PTZ actif)`
+                : 'Après franchise PTZ';
 
             const equity = immoVal - totalCrd;
             const equityPct = immoVal > 0 ? Math.max(0, (equity / immoVal) * 100) : 0;
@@ -3282,24 +3176,24 @@ self.addEventListener('fetch', e => {
             immoLoans.forEach(l => { html += loanCardHtml(l); });
             html += '</div>';
 
-            // PTZ timeline banner
-            html += `
-            <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:12px 16px;margin-bottom:14px;font-size:12px">
-                <span style="color:var(--yellow);font-weight:700">⏱ Évolution des mensualités immo</span>
-                <div style="display:flex;gap:24px;margin-top:8px;flex-wrap:wrap">
-                    <div>
-                        <span style="color:var(--muted)">Aujourd'hui (PTZ en franchise)</span><br>
-                        <strong class="loan-amount" style="color:var(--text);font-size:14px">${formatEur(mensActuelle)}/mois</strong>
-                        <span style="color:var(--muted);font-size:11px"> (prêt principal + habitat 0%)</span>
+            // PTZ timeline banner (affiché seulement s'il y a un prêt PTZ)
+            if (ptzLoan) {
+                html += `
+                <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:12px 16px;margin-bottom:14px;font-size:12px">
+                    <span style="color:var(--yellow);font-weight:700">⏱ Évolution des mensualités immo</span>
+                    <div style="display:flex;gap:24px;margin-top:8px;flex-wrap:wrap">
+                        <div>
+                            <span style="color:var(--muted)">Aujourd'hui (PTZ en franchise)</span><br>
+                            <strong class="loan-amount" style="color:var(--text);font-size:14px">${formatEur(mensActuelle)}/mois</strong>
+                        </div>
+                        <div style="display:flex;align-items:center;color:var(--muted)">→</div>
+                        <div>
+                            <span style="color:var(--muted)">${ptzLabel}</span><br>
+                            <strong class="loan-amount" style="color:var(--green);font-size:14px">${formatEur(mensApres)}/mois</strong>
+                        </div>
                     </div>
-                    <div style="display:flex;align-items:center;color:var(--muted)">→</div>
-                    <div>
-                        <span style="color:var(--muted)">À partir de déc. 2027 (PTZ actif)</span><br>
-                        <strong class="loan-amount" style="color:var(--green);font-size:14px">${formatEur(mensApres2027)}/mois</strong>
-                        <span style="color:var(--muted);font-size:11px"> (${formatEur(1033.88)} + ${formatEur(62.50)} + ${formatEur(222.22)} PTZ)</span>
-                    </div>
-                </div>
-            </div>`;
+                </div>`;
+            }
 
             // Résumé immo
             html += `
@@ -3604,7 +3498,7 @@ self.addEventListener('fetch', e => {
                 html += '<button class="btn-add-row" onclick="addRow(\'crypto\')">＋ Ajouter une ligne</button>';
 
             } else if (section === 'pea') {
-                sectionName = 'PEA Fortuneo';
+                sectionName = 'PEA';
                 html = '<table class="edit-table"><thead><tr><th>Nom</th><th>Ticker</th><th>Yahoo</th><th>Parts</th><th>PRU (€)</th><th>⊘</th></tr></thead><tbody>';
                 pea.forEach((e, i) => {
                     html += `<tr>
@@ -3620,7 +3514,7 @@ self.addEventListener('fetch', e => {
                 html += '<button class="btn-add-row" onclick="addRow(\'pea\')">＋ Ajouter une ligne</button>';
 
             } else if (section === 'peg') {
-                sectionName = 'PEG Orange';
+                sectionName = 'PEG';
                 html = `<table class="edit-table">
                     <tr><td><label>Nombre de parts</label></td><td><input type="number" step="0.0001" value="${pegRef.parts}" id="peg-parts"></td></tr>
                     <tr><td><label>Investi estimé (€)</label></td><td><input type="number" step="0.01" value="${pegRef.cost}" id="peg-cost"></td></tr>
@@ -3633,7 +3527,7 @@ self.addEventListener('fetch', e => {
                 </div>`;
 
             } else if (section === 'percol') {
-                sectionName = 'PERCOL Orange';
+                sectionName = 'PERCOL';
                 html = '<table class="edit-table"><thead><tr><th>Nom</th><th>Compartiment</th><th>Parts</th><th>VL (€)</th><th>⊘</th></tr></thead><tbody>';
                 percol.forEach((r, i) => {
                     html += `<tr>
@@ -3913,7 +3807,7 @@ self.addEventListener('fetch', e => {
                 else if (currentEditSection==='peg') pegRef = JSON.parse(JSON.stringify(DEFAULT_PEG_REF));
                 else if (currentEditSection==='percol') percol = JSON.parse(JSON.stringify(DEFAULT_PERCOL_ROWS));
                 else if (currentEditSection==='cto') cto = [];
-                else if (currentEditSection==='immo') immoVal = 340000;
+                else if (currentEditSection==='immo') immoVal = 0;
                 else if (currentEditSection==='loans') loanAnchors = JSON.parse(JSON.stringify(DEFAULT_LOAN_ANCHORS));
                 editSection(currentEditSection);
             }
@@ -3968,7 +3862,7 @@ self.addEventListener('fetch', e => {
                     cto         = loadFromStorage('inv_cto', DEFAULT_CTO);
                     pegRef      = loadFromStorage('inv_peg_ref', DEFAULT_PEG_REF);
                     percol      = loadFromStorage('inv_percol', DEFAULT_PERCOL_ROWS);
-                    immoVal     = loadFromStorage('inv_immo_val', 340000);
+                    immoVal     = loadFromStorage('inv_immo_val', 0);
                     loanAnchors    = loadFromStorage('inv_loan_anchors', DEFAULT_LOAN_ANCHORS);
                     extraLoans     = loadFromStorage('inv_extra_loans', []);
                     deletedLoanIds = loadFromStorage('inv_deleted_loans', []);
@@ -3987,7 +3881,7 @@ self.addEventListener('fetch', e => {
 
         function openSellWidget(context) {
             sellWidgetContext = context;
-            const titles = { crypto:'Crypto', pea:'PEA', cto:'CTO', peg:'PEG Orange', percol:'PERCOL Orange' };
+            const titles = { crypto:'Crypto', pea:'PEA', cto:'CTO', peg:'PEG', percol:'PERCOL' };
             document.getElementById('sellModalTitle').textContent = '💸 Vente — ' + (titles[context] || context);
 
             // Populate dropdown with existing positions
