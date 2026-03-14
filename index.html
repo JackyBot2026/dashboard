@@ -7243,6 +7243,16 @@ self.addEventListener('fetch', e => {
             updateDateTime();
             setInterval(updateDateTime, 1000);
 
+            // Recharger LOANS depuis localStorage au démarrage
+            // (nécessaire car let LOANS est initialisé avant que localStorage soit lisible)
+            const _storedLoans = loadFromStorage('inv_loans', []);
+            if (_storedLoans.length > 0) {
+                LOANS.splice(0, LOANS.length, ..._storedLoans);
+            }
+            loanAnchors    = loadFromStorage('inv_loan_anchors', DEFAULT_LOAN_ANCHORS);
+            extraLoans     = loadFromStorage('inv_extra_loans', []);
+            deletedLoanIds = loadFromStorage('inv_deleted_loans', []);
+
             await updateAll();
             setInterval(updateAll, 60000);
             setInterval(async () => {
