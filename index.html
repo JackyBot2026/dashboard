@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Dashboard Gwen</title>
+
     <!-- ===== PWA — iOS / Android ===== -->
     <!-- Permet l'ajout à l'écran d'accueil comme une vraie app -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2409,9 +2410,7 @@ self.addEventListener('fetch', e => {
         const PERCOL_COST = 0;
 
         // ===== LOANS =====
-        const LOANS = [];
-
-        // ===== LOAN ANCHORS =====
+        // Chargés depuis localStorage (inv_loans) — pas de données en dur
         const DEFAULT_LOAN_ANCHORS = {};
 
         const REALIZED = [];
@@ -2425,6 +2424,7 @@ self.addEventListener('fetch', e => {
         let pegRef      = loadFromStorage('inv_peg_ref', DEFAULT_PEG_REF);
         let percol      = loadFromStorage('inv_percol', DEFAULT_PERCOL_ROWS);
         let immoVal     = loadFromStorage('inv_immo_val', 0);
+        let LOANS          = loadFromStorage('inv_loans', []);   // prêts de base (immo + conso)
         let loanAnchors    = loadFromStorage('inv_loan_anchors', DEFAULT_LOAN_ANCHORS);
         let extraLoans     = loadFromStorage('inv_extra_loans', []);
         let deletedLoanIds = loadFromStorage('inv_deleted_loans', []);
@@ -3816,7 +3816,7 @@ self.addEventListener('fetch', e => {
         const STORAGE_KEYS = [
             'inv_crypto', 'inv_pea', 'inv_cto',
             'inv_peg_ref', 'inv_percol',
-            'inv_immo_val', 'inv_loan_anchors', 'inv_extra_loans', 'inv_deleted_loans',
+            'inv_immo_val', 'inv_loans', 'inv_loan_anchors', 'inv_extra_loans', 'inv_deleted_loans',
             'inv_alerts'
         ];
 
@@ -3862,6 +3862,7 @@ self.addEventListener('fetch', e => {
                     pegRef      = loadFromStorage('inv_peg_ref', DEFAULT_PEG_REF);
                     percol      = loadFromStorage('inv_percol', DEFAULT_PERCOL_ROWS);
                     immoVal     = loadFromStorage('inv_immo_val', 0);
+                    LOANS          = loadFromStorage('inv_loans', []);
                     loanAnchors    = loadFromStorage('inv_loan_anchors', DEFAULT_LOAN_ANCHORS);
                     extraLoans     = loadFromStorage('inv_extra_loans', []);
                     deletedLoanIds = loadFromStorage('inv_deleted_loans', []);
