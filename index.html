@@ -2407,7 +2407,9 @@ self.addEventListener('fetch', e => {
 
         const DEFAULT_PERCOL_ROWS = [];
 
-        const PERCOL_COST = 0;
+        // PERCOL_COST : calculé dynamiquement depuis les données percol
+        // row.pv = montant versé initial dans chaque compartiment
+        const PERCOL_COST = percol.reduce((s, row) => s + (row.pv || 0), 0);
 
         // ===== LOANS =====
         // Chargés depuis localStorage (inv_loans) — pas de données en dur
@@ -3144,10 +3146,9 @@ self.addEventListener('fetch', e => {
             // Mensualités actuelles (PTZ en franchise = mensualite 0)
             const mensActuelle = immoLoans.reduce((s, l) => s + (l.mensualite || 0), 0);
 
-            // Mensualités futures : PTZ actif → on utilise mensualiteApres si défini, sinon on calcule
+            // Mensualités futures : utilise mensualiteApres si défini sur chaque prêt
             const mensApres = immoLoans.reduce((s, l) => {
-                if (l.type === 'ptz') return s + (l.mensualiteApres || l.mensualite || 0);
-                return s + (l.mensualite || 0);
+                return s + (l.mensualiteApres !== undefined ? l.mensualiteApres : l.mensualite || 0);
             }, 0);
 
             // Trouver le PTZ pour afficher la date de fin de franchise
@@ -3381,7 +3382,7 @@ self.addEventListener('fetch', e => {
             const pegInvested = pegRef.cost;
             const pegValue = pegRef.parts * vlEst;
 
-            const percolInvested = percol.reduce((s, row) => s + (row.pv || 0), 0);
+            const percolInvested = PERCOL_COST;  // total versé = somme des row.pv
             let percolValue = 0;
             percol.forEach(row => { percolValue += row.parts * row.vl; });
 
