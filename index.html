@@ -3896,7 +3896,7 @@ self.addEventListener('fetch', e => {
                         window.PERCOL_COST = percol.reduce((s, r) => s + (r.pv || 0), 0);
                     } catch(_) {}
 
-                    await updateAll();
+                    updateAll();
                     showToast('📥 Données importées avec succès !', 'var(--green)');
                 } catch(err) {
                     console.error('Import error:', err);
