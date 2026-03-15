@@ -7287,10 +7287,10 @@ self.addEventListener('fetch', e => {
             pegRef      = loadFromStorage('inv_peg_ref', DEFAULT_PEG_REF);
             loanAnchors    = loadFromStorage('inv_loan_anchors', DEFAULT_LOAN_ANCHORS);
             extraLoans     = loadFromStorage('inv_extra_loans', []);
-       immoVal     = parseFloat(loadFromStorage('inv_immo_val', 0)) || 0;
+            immoVal     = parseFloat(loadFromStorage('inv_immo_val', 0)) || 0;
             deletedLoanIds = loadFromStorage('inv_deleted_loans', []);
 
-            await updateAll();
+            updateAll();
             setInterval(updateAll, 60000);
             setInterval(async () => {
                 await fetchEtfPrices();
