@@ -2547,7 +2547,7 @@ self.addEventListener('fetch', e => {
         // ========== FETCH CRYPTO ==========
         async function fetchCryptoPrices() {
             try {
-                const ids = cryptoPortfolio.map(c => c.geckoId).join(',');
+                const ids = cryptoPortfolio.map(c => c.geckoId).join(','); if(!ids) return false;
                 const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=eur,usd`;
                 const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
                 if (!r.ok) return false;
@@ -3904,7 +3904,7 @@ self.addEventListener('fetch', e => {
                         window.PERCOL_COST = percol.reduce((s, r) => s + (r.pv || 0), 0);
                     } catch(_) {}
 
-                    updateAll();
+                    await updateAll();
                     showToast('📥 Données importées avec succès !', 'var(--green)');
                 } catch(err) {
                     console.error('Import error:', err);
@@ -4050,7 +4050,7 @@ self.addEventListener('fetch', e => {
                 REALIZED.unshift({ t: pos.ticker, n: pos.name, cost: parseFloat((qty * pos.pru).toFixed(2)), sell: parseFloat((qty * price).toFixed(2)), pnl: parseFloat(pnl.toFixed(2)), pct: parseFloat(pnlPct.toFixed(1)) });
                 pos.qty -= qty;
                 if (pos.qty <= 0.000001) cryptoPortfolio.splice(idx, 1);
-                saveToStorage('inv_crypto', crypto);
+                saveToStorage('inv_crypto', cryptoPortfolio);
 
             } else if (sellWidgetContext === 'pea') {
                 const pos = pea[idx];
