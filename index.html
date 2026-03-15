@@ -2409,7 +2409,7 @@ self.addEventListener('fetch', e => {
 
         // PERCOL_COST : calculé dynamiquement depuis les données percol
         // row.pv = montant versé initial dans chaque compartiment
-        const PERCOL_COST = percol.reduce((s, row) => s + (row.pv || 0), 0);
+        let PERCOL_COST = 0;
 
         // ===== LOANS =====
         // Chargés depuis localStorage (inv_loans) — pas de données en dur
@@ -3880,7 +3880,7 @@ self.addEventListener('fetch', e => {
                     });
 
                     // Recharger l'état en mémoire
-                    crypto      = loadFromStorage('inv_crypto', DEFAULT_CRYPTO);
+                    cryptoPortfolio = loadFromStorage('inv_crypto', DEFAULT_CRYPTO);
                     pea         = loadFromStorage('inv_pea', DEFAULT_PEA);
                     cto         = loadFromStorage('inv_cto', DEFAULT_CTO);
                     pegRef      = loadFromStorage('inv_peg_ref', DEFAULT_PEG_REF);
