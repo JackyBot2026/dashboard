@@ -3369,7 +3369,7 @@ self.addEventListener('fetch', e => {
             let cryptoInvested = 0, cryptoValue = 0;
             cryptoPortfolio.forEach(c => {
                 cryptoInvested += c.qty * c.pru;
-                cryptoValue += c.qty * (cryptoEurPrices[c.geckoId] || 0);
+                cryptoValue += c.qty * (cryptoEurPrices[c.geckoId] || c.pru || 0);
             });
 
             let peaInvested = 0, peaValue = 0;
