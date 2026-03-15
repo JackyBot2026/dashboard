@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Dashboard Gwen</title>
@@ -3451,22 +3450,10 @@ self.addEventListener('fetch', e => {
         }
 
         // ========== MAIN UPDATE ==========
-        async function updateAll() {
+       async function updateAll() {
             updateDateTime();
+            renderCryptoTable();renderPeaTable();renderCtoTable();renderPegTable();renderPercolTable();renderTradesTable();const k0=updateKpis();renderOverview(k0);renderImmo();renderConso();updateStatus();checkAlerts();
             await fetchCryptoPrices();
-            await fetchEtfPrices();
-            await fetchOraPrice();
-            renderCryptoTable();
-            renderPeaTable();
-            renderCtoTable();
-            renderPegTable();
-            renderPercolTable();
-            renderTradesTable();
-            const kpis = updateKpis();
-            renderOverview(kpis);
-            renderImmo();
-            renderConso();
-            updateStatus();
             // Vérification des alertes après chaque update
             checkAlerts();
         }
