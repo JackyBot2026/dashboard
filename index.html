@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Dashboard Gwen</title>
@@ -2419,7 +2420,7 @@ self.addEventListener('fetch', e => {
         const DEFAULT_CTO = [];
 
         // ========== STATE ==========
-        let crypto      = loadFromStorage('inv_crypto', DEFAULT_CRYPTO);
+        let cryptoPortfolio      = loadFromStorage('inv_crypto', DEFAULT_CRYPTO);
         let pea         = loadFromStorage('inv_pea', DEFAULT_PEA);
         let cto         = loadFromStorage('inv_cto', DEFAULT_CTO);
         let pegRef      = loadFromStorage('inv_peg_ref', DEFAULT_PEG_REF);
@@ -2546,7 +2547,7 @@ self.addEventListener('fetch', e => {
         // ========== FETCH CRYPTO ==========
         async function fetchCryptoPrices() {
             try {
-                const ids = crypto.map(c => c.geckoId).join(',');
+                const ids = cryptoPortfolio.map(c => c.geckoId).join(',');
                 const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=eur,usd`;
                 const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
                 if (!r.ok) return false;
@@ -2609,7 +2610,7 @@ self.addEventListener('fetch', e => {
         function renderCryptoTable() {
             const tbody = document.querySelector('#cryptoTable tbody');
             tbody.innerHTML = '';
-            crypto.forEach(c => {
+            cryptoPortfolio.forEach(c => {
                 const eurPrice = cryptoEurPrices[c.geckoId] || 0;
                 const usdPrice = cryptoUsdPrices[c.geckoId] || 0;
                 const invested = c.qty * c.pru;
@@ -2869,7 +2870,7 @@ self.addEventListener('fetch', e => {
             const selectEl  = document.getElementById('buy-existing');
             const wrapEl    = document.getElementById('buy-existing-wrap');
             let positions = [];
-            if (context === 'crypto') positions = crypto;
+            if (context === 'crypto') positions = cryptoPortfolio;
             else if (context === 'pea')   positions = pea;
             else if (context === 'cto')   positions = cto;
 
@@ -2908,7 +2909,7 @@ self.addEventListener('fetch', e => {
             }
 
             let positions = [];
-            if (buyWidgetContext === 'crypto') positions = crypto;
+            if (buyWidgetContext === 'crypto') positions = cryptoPortfolio;
             else if (buyWidgetContext === 'pea')   positions = pea;
             else if (buyWidgetContext === 'cto')   positions = cto;
 
@@ -2941,7 +2942,7 @@ self.addEventListener('fetch', e => {
             let pruInfo = '';
 
             let existing = null;
-            if (buyWidgetContext === 'crypto') existing = crypto.find(c => c.ticker === ticker);
+            if (buyWidgetContext === 'crypto') existing = cryptoPortfolio.find(c => c.ticker === ticker);
             else if (buyWidgetContext === 'pea')   existing = pea.find(e => e.ticker === ticker);
             else if (buyWidgetContext === 'cto')   existing = cto.find(c => c.ticker === ticker);
 
@@ -2976,12 +2977,12 @@ self.addEventListener('fetch', e => {
             }
 
             if (buyWidgetContext === 'crypto') {
-                const ex = crypto.find(c => c.ticker === ticker);
+                const ex = cryptoPortfolio.find(c => c.ticker === ticker);
                 if (ex) {
                     ex.pru = (ex.qty * ex.pru + qty * price) / (ex.qty + qty);
                     ex.qty += qty;
                 } else {
-                    crypto.push({ name, ticker, geckoId: symbol || ticker.toLowerCase(), tag: 'tag-btc', qty, pru: price });
+                    cryptoPortfolio.push({ name, ticker, geckoId: symbol || ticker.toLowerCase(), tag: 'tag-btc', qty, pru: price });
                 }
                 saveToStorage('inv_crypto', crypto);
             } else if (buyWidgetContext === 'pea') {
@@ -3366,7 +3367,7 @@ self.addEventListener('fetch', e => {
         // ========== UPDATE KPIs ==========
         function updateKpis() {
             let cryptoInvested = 0, cryptoValue = 0;
-            crypto.forEach(c => {
+            cryptoPortfolio.forEach(c => {
                 cryptoInvested += c.qty * c.pru;
                 cryptoValue += c.qty * (cryptoEurPrices[c.geckoId] || 0);
             });
@@ -3450,12 +3451,40 @@ self.addEventListener('fetch', e => {
         }
 
         // ========== MAIN UPDATE ==========
-       async function updateAll() {
+        async function updateAll() {
             updateDateTime();
-            renderCryptoTable();renderPeaTable();renderCtoTable();renderPegTable();renderPercolTable();renderTradesTable();const k0=updateKpis();renderOverview(k0);renderImmo();renderConso();updateStatus();checkAlerts();
-            await fetchCryptoPrices();
-            // Vérification des alertes après chaque update
+
+            // Afficher immédiatement avec les données dispo (fallback prices)
+            renderCryptoTable();
+            renderPeaTable();
+            renderCtoTable();
+            renderPegTable();
+            renderPercolTable();
+            renderTradesTable();
+            const kpis0 = updateKpis();
+            renderOverview(kpis0);
+            renderImmo();
+            renderConso();
+            updateStatus();
             checkAlerts();
+
+            // Puis mettre à jour avec les vrais prix
+            try {
+                await Promise.all([
+                    fetchCryptoPrices(),
+                    fetchEtfPrices(),
+                    fetchOraPrice()
+                ]);
+                renderCryptoTable();
+                renderPeaTable();
+                renderPegTable();
+                const kpis = updateKpis();
+                renderOverview(kpis);
+                updateStatus();
+                checkAlerts();
+            } catch(e) {
+                console.warn('Prix non disponibles, affichage avec fallback:', e);
+            }
         }
 
         // ========== EDIT PANEL ==========
@@ -3471,14 +3500,14 @@ self.addEventListener('fetch', e => {
             if (section === 'crypto') {
                 sectionName = 'Crypto';
                 html = '<table class="edit-table"><thead><tr><th>Nom</th><th>Ticker</th><th>CoinGecko ID</th><th>Qté</th><th>PRU (€)</th><th>⊘</th></tr></thead><tbody>';
-                crypto.forEach((c, i) => {
+                cryptoPortfolio.forEach((c, i) => {
                     html += `<tr>
                         <td><input type="text" value="${c.name}" data-field="name" data-idx="${i}"></td>
                         <td><input type="text" value="${c.ticker}" data-field="ticker" data-idx="${i}"></td>
                         <td><input type="text" value="${c.geckoId}" data-field="geckoId" data-idx="${i}"></td>
                         <td><input type="number" step="0.000001" value="${c.qty}" data-field="qty" data-idx="${i}"></td>
                         <td><input type="number" step="0.01" value="${c.pru}" data-field="pru" data-idx="${i}"></td>
-                        <td><button class="btn-delete-row" onclick="deleteRow('crypto',${i})" ${crypto.length===1?'disabled':''}>✕</button></td>
+                        <td><button class="btn-delete-row" onclick="deleteRow('crypto',${i})" ${cryptoPortfolio.length===1?'disabled':''}>✕</button></td>
                     </tr>`;
                 });
                 html += '</tbody></table>';
@@ -3652,14 +3681,14 @@ self.addEventListener('fetch', e => {
             if (!currentEditSection) return;
 
             if (currentEditSection === 'crypto') {
-                crypto = [];
+                cryptoPortfolio = [];
                 document.querySelectorAll('#editPanelContent input[data-field]').forEach(inp => {
                     const field = inp.getAttribute('data-field');
                     const idx = parseInt(inp.getAttribute('data-idx'));
-                    if (!crypto[idx]) crypto[idx] = {};
-                    crypto[idx][field] = (field==='qty'||field==='pru') ? parseFloat(inp.value) : inp.value;
+                    if (!cryptoPortfolio[idx]) crypto[idx] = {};
+                    cryptoPortfolio[idx][field] = (field==='qty'||field==='pru') ? parseFloat(inp.value) : inp.value;
                 });
-                crypto = crypto.filter(c => c);
+                crypto = cryptoPortfolio.filter(c => c);
             } else if (currentEditSection === 'pea') {
                 pea = [];
                 document.querySelectorAll('#editPanelContent input[data-field]').forEach(inp => {
@@ -3723,7 +3752,7 @@ self.addEventListener('fetch', e => {
         }
 
         function addRow(section) {
-            if (section === 'crypto') crypto.push({ name:'Nouveau', ticker:'NEW', geckoId:'bitcoin', tag:'tag-btc', qty:0, pru:0 });
+            if (section === 'crypto') cryptoPortfolio.push({ name:'Nouveau', ticker:'NEW', geckoId:'bitcoin', tag:'tag-btc', qty:0, pru:0 });
             else if (section === 'pea') pea.push({ name:'Nouveau', ticker:'NEW', yahoo:'NEW.PA', parts:0, pru:0, fallbackPrice:0 });
             else if (section === 'percol') percol.push({ name:'Nouveau', compartiment:'', parts:0, vl:0, pv:0 });
             else if (section === 'cto') cto.push({ name:'Nouveau', ticker:'NEW', yahoo:'NEW', qty:0, pru:0, fallbackPrice:0 });
@@ -3731,7 +3760,7 @@ self.addEventListener('fetch', e => {
         }
 
         function deleteRow(section, idx) {
-            if (section==='crypto' && crypto.length>1) crypto.splice(idx,1);
+            if (section==='crypto' && cryptoPortfolio.length>1) cryptoPortfolio.splice(idx,1);
             else if (section==='pea' && pea.length>1) pea.splice(idx,1);
             else if (section==='percol' && percol.length>1) percol.splice(idx,1);
             else if (section==='cto') cto.splice(idx,1);
@@ -3840,26 +3869,48 @@ self.addEventListener('fetch', e => {
             reader.onload = e => {
                 try {
                     const data = JSON.parse(e.target.result);
-                    STORAGE_KEYS.forEach(k => {
-                        if (data[k] !== undefined) saveToStorage(k, data[k]);
+                    if (!data || typeof data !== 'object') throw new Error('Format invalide');
+
+                    // Sauvegarder toutes les clés connues + clés du fichier
+                    const allKeys = [...new Set([...STORAGE_KEYS, ...Object.keys(data)])];
+                    allKeys.forEach(k => {
+                        if (k.startsWith('inv_') && data[k] !== undefined) {
+                            saveToStorage(k, data[k]);
+                        }
                     });
+
                     // Recharger l'état en mémoire
                     crypto      = loadFromStorage('inv_crypto', DEFAULT_CRYPTO);
                     pea         = loadFromStorage('inv_pea', DEFAULT_PEA);
                     cto         = loadFromStorage('inv_cto', DEFAULT_CTO);
                     pegRef      = loadFromStorage('inv_peg_ref', DEFAULT_PEG_REF);
                     percol      = loadFromStorage('inv_percol', DEFAULT_PERCOL_ROWS);
-                    immoVal     = loadFromStorage('inv_immo_val', 0);
-                    LOANS          = loadFromStorage('inv_loans', []);
+                    immoVal     = parseFloat(loadFromStorage('inv_immo_val', 0)) || 0;
                     loanAnchors    = loadFromStorage('inv_loan_anchors', DEFAULT_LOAN_ANCHORS);
                     extraLoans     = loadFromStorage('inv_extra_loans', []);
                     deletedLoanIds = loadFromStorage('inv_deleted_loans', []);
+
+                    // LOANS : compatible let et const (robustesse cache)
+                    try {
+                        LOANS = loadFromStorage('inv_loans', []);
+                    } catch(_) {
+                        // Si LOANS est const (ancienne version), utiliser splice
+                        const _l = loadFromStorage('inv_loans', []);
+                        if (Array.isArray(LOANS)) LOANS.splice(0, LOANS.length, ..._l);
+                    }
+
+                    // PERCOL_COST dynamique (robustesse cache)
+                    try {
+                        window.PERCOL_COST = percol.reduce((s, r) => s + (r.pv || 0), 0);
+                    } catch(_) {}
+
                     updateAll();
                     showToast('📥 Données importées avec succès !', 'var(--green)');
-                } catch {
+                } catch(err) {
+                    console.error('Import error:', err);
                     showToast('⚠ Fichier invalide — import annulé.', 'var(--red)');
                 }
-                event.target.value = ''; // reset input pour pouvoir ré-importer le même fichier
+                event.target.value = '';
             };
             reader.readAsText(file);
         }
@@ -3878,7 +3929,7 @@ self.addEventListener('fetch', e => {
 
             let positions = [];
             if (context === 'crypto') {
-                positions = crypto.map((c, i) => ({ idx: i, label: `${c.name} (${c.ticker}) — ${c.qty} unités @ PRU ${formatEur(c.pru)}` }));
+                positions = cryptoPortfolio.map((c, i) => ({ idx: i, label: `${c.name} (${c.ticker}) — ${c.qty} unités @ PRU ${formatEur(c.pru)}` }));
             } else if (context === 'pea') {
                 positions = pea.map((e, i) => ({ idx: i, label: `${e.name} (${e.ticker}) — ${e.parts} parts @ PRU ${formatEur(e.pru)}` }));
             } else if (context === 'cto') {
@@ -3931,7 +3982,7 @@ self.addEventListener('fetch', e => {
             let pos = null;
             let posQty = 0, posPru = 0;
             if (sellWidgetContext === 'crypto') {
-                pos = crypto[idx];
+                pos = cryptoPortfolio[idx];
                 posQty = pos ? pos.qty : 0;
                 posPru = pos ? pos.pru : 0;
             } else if (sellWidgetContext === 'pea') {
@@ -3991,14 +4042,14 @@ self.addEventListener('fetch', e => {
             const idx = parseInt(idxStr);
 
             if (sellWidgetContext === 'crypto') {
-                const pos = crypto[idx];
+                const pos = cryptoPortfolio[idx];
                 if (!pos) return;
                 if (qty > pos.qty) { alert('Quantité supérieure à la position existante.'); return; }
                 const pnl = qty * price - qty * pos.pru;
                 const pnlPct = pos.pru > 0 ? (pnl / (qty * pos.pru)) * 100 : 0;
                 REALIZED.unshift({ t: pos.ticker, n: pos.name, cost: parseFloat((qty * pos.pru).toFixed(2)), sell: parseFloat((qty * price).toFixed(2)), pnl: parseFloat(pnl.toFixed(2)), pct: parseFloat(pnlPct.toFixed(1)) });
                 pos.qty -= qty;
-                if (pos.qty <= 0.000001) crypto.splice(idx, 1);
+                if (pos.qty <= 0.000001) cryptoPortfolio.splice(idx, 1);
                 saveToStorage('inv_crypto', crypto);
 
             } else if (sellWidgetContext === 'pea') {
@@ -4716,7 +4767,7 @@ self.addEventListener('fetch', e => {
             if (!container) return;
             container.innerHTML = '';
             const items = [];
-            crypto.forEach(c => items.push({ ticker: c.ticker.toUpperCase() + '-USD', label: c.ticker, name: c.name, type: 'crypto' }));
+            cryptoPortfolio.forEach(c => items.push({ ticker: c.ticker.toUpperCase() + '-USD', label: c.ticker, name: c.name, type: 'crypto' }));
             pea.forEach(e => items.push({ ticker: e.yahoo || e.ticker + '.PA', label: e.ticker, name: e.name, type: 'etf' }));
             cto.forEach(c => items.push({ ticker: c.yahoo || c.ticker, label: c.ticker, name: c.name, type: 'stock' }));
             if (items.length === 0) {
@@ -7328,7 +7379,7 @@ self.addEventListener('fetch', e => {
 
                 // Chercher le prix actuel parmi les actifs connus
                 let currentPrice = null;
-                const cryptoAsset = crypto.find(c => c.ticker.toUpperCase() === alert.ticker || c.geckoId.toUpperCase() === alert.ticker);
+                const cryptoAsset = cryptoPortfolio.find(c => c.ticker.toUpperCase() === alert.ticker || c.geckoId.toUpperCase() === alert.ticker);
                 if (cryptoAsset) { currentPrice = cryptoEurPrices[cryptoAsset.geckoId] || 0; }
 
                 const peaAsset = pea.find(e => e.ticker.toUpperCase() === alert.ticker);
