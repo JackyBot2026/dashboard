@@ -2420,11 +2420,11 @@ self.addEventListener('fetch', e => {
         const DEFAULT_CTO = [];
 
         // ========== STATE ==========
-        let cryptoPortfolio      = loadFromStorage('inv_crypto', DEFAULT_CRYPTO);
+        let cryptoPortfolio = [];
         let pea         = loadFromStorage('inv_pea', DEFAULT_PEA);
         let cto         = loadFromStorage('inv_cto', DEFAULT_CTO);
         let pegRef      = loadFromStorage('inv_peg_ref', DEFAULT_PEG_REF);
-        let percol      = loadFromStorage('inv_percol', DEFAULT_PERCOL_ROWS);
+       let percol = [];
         let immoVal     = loadFromStorage('inv_immo_val', 0);
         let LOANS          = loadFromStorage('inv_loans', []);   // prêts de base (immo + conso)
         let loanAnchors    = loadFromStorage('inv_loan_anchors', DEFAULT_LOAN_ANCHORS);
