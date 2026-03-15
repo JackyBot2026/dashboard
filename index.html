@@ -3079,8 +3079,8 @@ self.addEventListener('fetch', e => {
             const fillColor = l.type === 'conso' ? 'var(--red)' : l.type === 'ptz' ? 'var(--green)' : 'var(--blue)';
             const typeLabel = { immo:'Habitat', ptz:'PTZ+', conso:'Conso' };
             const typeBadge = { immo:'badge-immo', ptz:'badge-ptz', conso:'badge-conso' };
-            const anchor    = loanAnchors[l.id] || DEFAULT_LOAN_ANCHORS[l.id];
-            const nPaid     = countPaymentsSince(anchor.date, l.payDay);
+            const anchor = loanAnchors[l.id] || DEFAULT_LOAN_ANCHORS[l.id] || loadFromStorage('inv_loan_anchors', {})[l.id] || { crd: 0, date: new Date().toISOString().slice(0,10) };
+            const nPaid  = countPaymentsSince(anchor.date, l.payDay || 5);
 
             return `
             <div class="loan-card">
@@ -3138,6 +3138,9 @@ self.addEventListener('fetch', e => {
 
         // ========== RENDER IMMOBILIER (prêts immo uniquement) ==========
         function renderImmo() {
+            if (!LOANS.length) { const _l = loadFromStorage('inv_loans', []); LOANS.splice(0, LOANS.length, ..._l); }
+            if (!Object.keys(loanAnchors).length) loanAnchors = loadFromStorage('inv_loan_anchors', {});
+            if (!extraLoans.length) extraLoans = loadFromStorage('inv_extra_loans', []);
             const immoLoans = [...LOANS, ...extraLoans].filter(l => l.type !== 'conso' && !deletedLoanIds.includes(l.id));
             const totalCrd     = immoLoans.reduce((s, l) => s + computeCRD(l), 0);
             const totalEmprunte= immoLoans.reduce((s, l) => s + l.montant, 0);
